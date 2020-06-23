@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-public class TerrainGrid : MonoBehaviour {
+public class TerrainGrid_old : MonoBehaviour {
     public int sizeX, sizeZ;
 
     private Vector3[] vertices;
@@ -11,7 +11,7 @@ public class TerrainGrid : MonoBehaviour {
 
     private void Awake()
     {
-        Generate();
+        
     }
 
     private void Update()

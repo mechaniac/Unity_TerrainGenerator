@@ -8,26 +8,24 @@ public class GridTile : MonoBehaviour
     Vector3[] vertices = new Vector3[16];
     Text tileText;
 
+    public int id;
+    public int coordX;
+    public int coordZ;
+
     private void Awake()
     {
         tileText = GetComponentInChildren<Text>();
     }
-    private void Start()
-    {
-        
-        
-    }
-
 
     public void InitializeTile(int x, int z, int index)
     {
         
         tileText.text = $"{x} / {z}\n{index}";
+        id = index;
+        coordX = x;
+        coordZ = z;
     }
 
-    public void GenerateTriangles()
-    {
-
-    }
+   
 
 }

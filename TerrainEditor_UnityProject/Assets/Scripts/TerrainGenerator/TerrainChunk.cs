@@ -29,7 +29,7 @@ public class TerrainChunk : MonoBehaviour
 
     void Start()
     {
-        Debug.Log($"chunkPrefab: " + tG.tilePrefab.name);
+        //Debug.Log($"chunkPrefab: " + tG.tilePrefab.name);
     }
     public void SetChunkVertices(Vector3[] vertices)
     {
@@ -67,6 +67,9 @@ public class TerrainChunk : MonoBehaviour
         float chunkXOffset = tG.ChunkXSize * CoordX * GridMetrics.gridTileOffset;
         float chunkZOffset = tG.ChunkZSize * CoordZ * GridMetrics.gridTileOffset;
 
+        int tilesPerChunk = tG.ChunkXSize * tG.ChunkZSize;
+        int tilesBeforeChunk = tilesPerChunk * id;
+
         for (int z = 0, i = 0; z <  tG.ChunkZSize; z++)
         {
             for (int x = 0; x < tG.ChunkXSize; x++, i++)
@@ -77,7 +80,7 @@ public class TerrainChunk : MonoBehaviour
                     0,
                     z * GridMetrics.gridTileOffset + GridMetrics.gridTileOffset / 2f + chunkZOffset);
                 t.transform.parent = transform;
-                t.InitializeTile(x + tG.ChunkXSize * CoordX, z + tG.ChunkZSize * CoordZ, i);
+                t.InitializeTile(x + tG.ChunkXSize * CoordX, z + tG.ChunkZSize * CoordZ, tilesBeforeChunk + i);
             }
         }
     }

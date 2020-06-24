@@ -24,25 +24,24 @@ public class TerrainGenerator : MonoBehaviour
     Vector3[] allVertices;
 
 
-    GridTile[] tiles;
+
     Vector3[] chunkVerticeList;
     TerrainChunk[] chunks;
 
-    Mesh mesh;
+    
     void Awake()
     {
         InitializeFields();
 
         allVertices = new Vector3[verticeCountX * verticeCountZ];
         LayoutInitialGrid();
-
+        AdjustGridOffsets();
         InstantiateChunks();
 
-        
-    }
+      }
     private void Start()
     {
-        
+
     }
 
 
@@ -129,7 +128,7 @@ public class TerrainGenerator : MonoBehaviour
     {
         int chunkCoordX = chunk.CoordX;
         int chunkCoordZ = chunk.CoordZ;
-        int startVertex = chunkCoordX * (verticeCountXPerChunk - 1) + (chunkCoordZ * verticeCountX * (verticeCountZPerChunk -1));
+        int startVertex = chunkCoordX * (verticeCountXPerChunk - 1) + (chunkCoordZ * verticeCountX * (verticeCountZPerChunk - 1));
 
         Vector3[] chunkVertices = new Vector3[verticeCountXPerChunk * verticeCountZPerChunk];
 
@@ -138,8 +137,8 @@ public class TerrainGenerator : MonoBehaviour
             for (int x = 0; x < verticeCountXPerChunk; x++, i++)
             {
                 chunkVertices[i] = allVertices[startVertex + x + z * verticeCountX];
-                Debug.Log($"vertice number {i}, sits at {chunkVertices[i]}");
-                Debug.Log($"index of sourceVertice: {startVertex + x + z * verticeCountX} ");
+                //Debug.Log($"vertice number {i}, sits at {chunkVertices[i]}");
+                //Debug.Log($"index of sourceVertice: {startVertex + x + z * verticeCountX} ");
             }
         }
 
@@ -181,13 +180,13 @@ public class TerrainGenerator : MonoBehaviour
                 }
             }
         }
-        mesh.vertices = allVertices;
+        //mesh.vertices = allVertices;
     }
 
-    void TestOffset(ValueTuple<int, int> tileCoordinates)
+    void TestOffset(GridTile tile)
     {
-        int startIndexFromX = tileCoordinates.Item1 * 3;
-        int startIndexFromZ = tileCoordinates.Item2 * 3 * verticeCountX;
+        int startIndexFromX = tile.coordX * 3;
+        int startIndexFromZ = tile.coordZ * 3 * verticeCountX;
 
 
         int s = startIndexFromZ + startIndexFromX;
@@ -199,8 +198,8 @@ public class TerrainGenerator : MonoBehaviour
 
             }
         }
-        mesh.vertices = allVertices;
-        mesh.RecalculateNormals();
+
+
     }
 
 

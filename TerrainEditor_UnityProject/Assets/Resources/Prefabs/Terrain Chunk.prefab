@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6475284562271155187}
   - component: {fileID: 7052543323513244833}
   - component: {fileID: 6252368839958163669}
+  - component: {fileID: -1461676506426011608}
   m_Layer: 0
   m_Name: Terrain Chunk
   m_TagString: Untagged
@@ -93,3 +94,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
+  CoordX: 0
+  CoordZ: 0
+  tG: {fileID: 0}
+  tilePrefab: {fileID: 21771886327059369, guid: 497e03965e8aa544491e08d0334c1a68,
+    type: 3}
+--- !u!64 &-1461676506426011608
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8038057248632182631}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}

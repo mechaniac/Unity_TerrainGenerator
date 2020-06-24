@@ -3,14 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MeshRenderer), typeof(MeshFilter), typeof(MeshCollider))]
+
 public class TerrainGenerator : MonoBehaviour
 {
     public GridTile tilePrefab;
     public TerrainChunk chunkPrefab;
-
-    int verticeCountX;
-    int verticeCountZ;
 
     public int ChunkXSize;
     public int ChunkZSize;
@@ -18,11 +15,14 @@ public class TerrainGenerator : MonoBehaviour
     public int ChunkXCount;
     public int ChunkZCount;
 
-    int verticeCountXPerChunk;
-    int verticeCountZPerChunk;
+    public int verticeCountX;
+    public int verticeCountZ;
 
-    Vector3[] vertices;
-    int[] triangles;
+    public int verticeCountXPerChunk;
+    public int verticeCountZPerChunk;
+
+    Vector3[] allVertices;
+
 
     GridTile[] tiles;
     Vector3[] chunkVerticeList;
@@ -32,21 +32,20 @@ public class TerrainGenerator : MonoBehaviour
     void Awake()
     {
         InitializeFields();
-        chunks = new TerrainChunk[ChunkXCount * ChunkZCount];
-        vertices = new Vector3[verticeCountX * verticeCountZ];
-        
-        
-        InstantiateChunks();
+
+        allVertices = new Vector3[verticeCountX * verticeCountZ];
         LayoutInitialGrid();
-        Mesh myChunkMesh = chunks[3].GetComponent<MeshFilter>().mesh;
-        chunkVerticeList = GetVerticesOfChunk((1, 1), chunks[3]);
-        Debug.Log($"vertices in chunk: {chunkVerticeList.Length}");
+
+        InstantiateChunks();
 
         
-        myChunkMesh.vertices = chunkVerticeList;
-        SetChunkTriangles(myChunkMesh);
-        myChunkMesh.RecalculateNormals();
     }
+    private void Start()
+    {
+        
+    }
+
+
 
     private void Update()
     {
@@ -54,20 +53,21 @@ public class TerrainGenerator : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
-        if (vertices == null) return;
+        if (allVertices == null) return;
 
         Gizmos.color = Color.black;
 
-        for (int i = 0; i < vertices.Length; i++)
+        for (int i = 0; i < allVertices.Length; i++)
         {
-            
-            Gizmos.DrawSphere(vertices[i], .06f);
+
+            Gizmos.DrawSphere(allVertices[i], .06f);
         }
 
+        if (chunkVerticeList == null) return;
         Gizmos.color = Color.red;
-        for(int i = 0; i<chunkVerticeList.Length; i++)
+        for (int i = 0; i < chunkVerticeList.Length; i++)
         {
-            Gizmos.DrawSphere(chunkVerticeList[i], .07f); 
+            Gizmos.DrawSphere(chunkVerticeList[i], .07f);
         }
     }
 
@@ -83,85 +83,6 @@ public class TerrainGenerator : MonoBehaviour
         Debug.Log($"verticeCountXPerChunk: {verticeCountXPerChunk}, verticeCOuntZPerChunk: {verticeCountZPerChunk}");
     }
 
-    void InstantiateChunks()
-    {
-        for (int z = 0, i = 0; z < ChunkZCount; z++)
-        {
-            for (int x = 0; x < ChunkXCount; x++, i++)
-            {
-                chunks[i] = Instantiate(chunkPrefab);
-                chunks[i].transform.parent = transform;
-                //chunks[i].transform.position = new Vector3(x * ChunkXSize * GridMetrics.gridTileOffset, 0, z * ChunkZSize * GridMetrics.gridTileOffset);
-            }
-        }
-    }
-
-    void GenerateTiles()
-    {
-        for (int z = 0, i = 0; z < ChunkZSize; z++)
-        {
-            for (int x = 0; x < ChunkXSize; x++, i++)
-            {
-                GridTile t = tiles[i] = Instantiate(tilePrefab);
-                float o = GridMetrics.gridTileOffset;
-                t.transform.position = new Vector3(x * o + o / 2f, 0, z * o + o / 2f);
-                t.transform.parent = transform;
-                t.InitializeTile(x, z, i);
-
-            }
-        }
-    }
-
-    int SetVertexCount()  //vertices of Grid with 2 separations.
-    {
-
-        return verticeCountX * verticeCountZ;
-    }
-
-    Vector3[] GetVerticesOfChunk(ValueTuple<int, int> chunkCoordinates, TerrainChunk chunkMesh)
-    {
-        int chunkCoordX = chunkCoordinates.Item1;
-        int chunkCoordZ = chunkCoordinates.Item2;
-        int startVertex = chunkCoordX * verticeCountX *(verticeCountZPerChunk-1) + chunkCoordZ * (verticeCountXPerChunk-1);
-
-        Vector3[] chunkVertices = new Vector3[(ChunkXSize + 1 + 2 * ChunkXSize) * (ChunkZSize + 1 + 2 * ChunkZSize)];
-
-        Transform t = chunkMesh.transform;
-        Debug.Log($"trasnd: {t.position}");
-        Vector3 test = new Vector3(1, 2, 4);
-        Debug.Log($"trasnd: {t.InverseTransformPoint(test)}");
-
-        for (int z = 0, i =0; z < verticeCountZPerChunk; z++)
-        {
-            for (int x = 0; x < verticeCountXPerChunk; x++, i++)
-            {
-                chunkVertices[i] =  vertices[startVertex + x + z * verticeCountX];
-            }
-        }
-
-        return chunkVertices;
-    }
-
-    void SetChunkTriangles(Mesh chunkMesh)
-    {
-
-        triangles = new int[6 * verticeCountXPerChunk * verticeCountZPerChunk];
-
-        for (int z = 0, ti = 0; z < verticeCountZPerChunk - 1; z++)
-        {
-            for (int x = 0; x < verticeCountXPerChunk - 1; x++, ti += 6)
-            {
-                //Debug.Log($"chunky");
-                int offsetFRomZ = z * verticeCountXPerChunk;
-                triangles[ti] = offsetFRomZ + x;
-                triangles[ti + 1] = triangles[ti + 4] = offsetFRomZ + x + verticeCountXPerChunk;
-                triangles[ti + 2] = triangles[ti + 3] = offsetFRomZ + x + 1;
-                triangles[ti + 5] = offsetFRomZ + x + verticeCountXPerChunk + 1;
-            }
-        }
-        chunkMesh.triangles = triangles;
-        chunkMesh.RecalculateNormals();
-    }
 
     void LayoutInitialGrid()    //vertices in 1/3 gridSize distance
     {
@@ -172,11 +93,61 @@ public class TerrainGenerator : MonoBehaviour
                 int _z = z % 3;
                 int _x = x % 3;
                 //Debug.Log($"vertice number: {i}");
-                vertices[i] = new Vector3((_x * (1f / 3f) + x / 3) * GridMetrics.gridTileOffset, 0, (_z * (1f / 3f) + z / 3) * GridMetrics.gridTileOffset);
+                allVertices[i] = new Vector3((_x * (1f / 3f) + x / 3) * GridMetrics.gridTileOffset, 0, (_z * (1f / 3f) + z / 3) * GridMetrics.gridTileOffset);
             }
         }
         //mesh.vertices = vertices;
     }
+
+    void InstantiateChunks()
+    {
+        chunks = new TerrainChunk[ChunkXCount * ChunkZCount];
+
+        for (int z = 0, i = 0; z < ChunkZCount; z++)
+        {
+            for (int x = 0; x < ChunkXCount; x++, i++)
+            {
+                TerrainChunk c = chunks[i] = Instantiate(chunkPrefab);
+                c.transform.parent = transform;
+                c.CoordX = x;
+                c.CoordZ = z;
+                c.id = i;
+                c.tG = this;
+
+                c.SetChunkVertices(GetVerticesOfChunk(c));
+                c.SetChunkTriangles();
+                c.InstantiateGridTiles();
+                //c.transform.position = new Vector3(x * ChunkXSize * GridMetrics.gridTileOffset, 0, z * ChunkZSize * GridMetrics.gridTileOffset);
+            }
+        }
+    }
+
+
+
+
+    Vector3[] GetVerticesOfChunk(TerrainChunk chunk)
+    {
+        int chunkCoordX = chunk.CoordX;
+        int chunkCoordZ = chunk.CoordZ;
+        int startVertex = chunkCoordX * (verticeCountXPerChunk - 1) + (chunkCoordZ * verticeCountX * (verticeCountZPerChunk -1));
+
+        Vector3[] chunkVertices = new Vector3[verticeCountXPerChunk * verticeCountZPerChunk];
+
+        for (int z = 0, i = 0; z < verticeCountZPerChunk; z++)
+        {
+            for (int x = 0; x < verticeCountXPerChunk; x++, i++)
+            {
+                chunkVertices[i] = allVertices[startVertex + x + z * verticeCountX];
+                Debug.Log($"vertice number {i}, sits at {chunkVertices[i]}");
+                Debug.Log($"index of sourceVertice: {startVertex + x + z * verticeCountX} ");
+            }
+        }
+
+        return chunkVertices;
+    }
+
+
+
 
     void AdjustGridOffsets()    //incorporate innerOffset
     {
@@ -190,7 +161,7 @@ public class TerrainGenerator : MonoBehaviour
                 //Debug.Log($"_z = {_z}, z = {z}, _z%2 = {_z%2}");
                 for (int x = 0; x < verticeCountX; x++)
                 {
-                    vertices[verticeCountX * z + x] += new Vector3(0, 0, o);
+                    allVertices[verticeCountX * z + x] += new Vector3(0, 0, o);
                 }
             }
 
@@ -206,11 +177,11 @@ public class TerrainGenerator : MonoBehaviour
 
                 for (int z = 0; z < verticeCountZ; z++)
                 {
-                    vertices[x + verticeCountX * z] += new Vector3(o, 0, 0);
+                    allVertices[x + verticeCountX * z] += new Vector3(o, 0, 0);
                 }
             }
         }
-        mesh.vertices = vertices;
+        mesh.vertices = allVertices;
     }
 
     void TestOffset(ValueTuple<int, int> tileCoordinates)
@@ -224,39 +195,19 @@ public class TerrainGenerator : MonoBehaviour
         {
             for (int x = 0; x < 4; x++)
             {
-                vertices[z + x] += new Vector3(0, 1f, 0);
+                allVertices[z + x] += new Vector3(0, 1f, 0);
 
             }
         }
-        mesh.vertices = vertices;
+        mesh.vertices = allVertices;
         mesh.RecalculateNormals();
     }
 
-    void RaiseTile(Vector2 tileCoordinates)
-    {
-
-    }
 
 
 
-    void GenerateTriangles()
-    {
-        triangles = new int[6 * verticeCountXPerChunk * verticeCountZPerChunk];
 
-        for (int z = 0, ti = 0; z < verticeCountZPerChunk - 1; z++)
-        {
-            for (int x = 0; x < verticeCountXPerChunk - 1; x++, ti += 6)
-            {
-                int offsetFRomZ = z * verticeCountXPerChunk;
-                triangles[ti] = offsetFRomZ + x;
-                triangles[ti + 1] = triangles[ti + 4] = offsetFRomZ + x + verticeCountXPerChunk;
-                triangles[ti + 2] = triangles[ti + 3] = offsetFRomZ + x + 1;
-                triangles[ti + 5] = offsetFRomZ + x + verticeCountXPerChunk + 1;
-            }
-        }
-        mesh.triangles = triangles;
-        mesh.RecalculateNormals();
-    }
+
 
 
 
